@@ -1,0 +1,65 @@
+{
+  "name": "@mcp/hats-protocol-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for Hats Protocol operations",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-hats": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run --config vitest.config.unit.ts",
+    "test:integration": "vitest run --config vitest.config.integration.ts",
+    "test:e2e": "vitest run --config vitest.config.e2e.ts",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist coverage .tsc-cache"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "hats-protocol",
+    "dao",
+    "governance",
+    "blockchain",
+    "ethereum",
+    "web3"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@hatsprotocol/sdk-v1-core": "0.10.0",
+    "@modelcontextprotocol/sdk": "0.6.2",
+    "dotenv": "16.4.5",
+    "graphql": "16.9.0",
+    "graphql-request": "7.1.2",
+    "viem": "2.21.54",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@typescript-eslint/eslint-plugin": "8.18.0",
+    "@typescript-eslint/parser": "8.18.0",
+    "@vitest/coverage-v8": "2.1.8",
+    "eslint": "9.17.0",
+    "eslint-config-prettier": "9.1.0",
+    "prettier": "3.4.2",
+    "tsx": "4.19.2",
+    "typescript": "5.7.2",
+    "vitest": "2.1.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}
