@@ -226,7 +226,7 @@ export async function resolveNetworkConfig(config: NetworkConfig): Promise<Netwo
       resolved.rpcUrl = resolved.rpcUrl.replace(/\$\{[^}]+\}/g, apiKey);
     } else if (resolved.fallbackRpcUrls && resolved.fallbackRpcUrls.length > 0) {
       // Use first fallback URL if API key is not available
-      resolved.rpcUrl = resolved.fallbackRpcUrls[0];
+      resolved.rpcUrl = resolved.fallbackRpcUrls[0]!; // Non-null assertion safe here
     }
   }
   

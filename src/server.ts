@@ -18,6 +18,12 @@ import { getHatDetails } from './tools/read/get-hat-details.js';
 import { queryHatsByWearer } from './tools/read/query-hats-by-wearer.js';
 import { getTreeStructure } from './tools/read/get-tree-structure.js';
 
+// Import write tool implementations
+import { prepareCreateHat } from './tools/write/prepare-create-hat.js';
+import { prepareMintHat } from './tools/write/prepare-mint-hat.js';
+import { prepareBurnHat } from './tools/write/prepare-burn-hat.js';
+import { prepareTransferHat } from './tools/write/prepare-transfer-hat.js';
+
 /**
  * Create and configure the Hats Protocol MCP server
  */
@@ -26,7 +32,7 @@ export async function createServer(): Promise<Server> {
     {
       name: 'hats-protocol-mcp-server',
       version: '1.0.0',
-      description: 'Model Context Protocol server for comprehensive Hats Protocol operations including role management, permissions, and analytics'
+      description: 'Model Context Protocol server for Hats Protocol operations - role management, permissions, and organizational structures on EVM chains'
     },
     {
       capabilities: {
@@ -40,10 +46,113 @@ export async function createServer(): Promise<Server> {
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
       tools: [
-        // Hat Management Tools
+        // Read Tools
         {
-          name: 'create-hat',
-          description: 'Create a new hat in the Hats Protocol hierarchy',
+          name: 'check-hat-wearer',
+          description: 'Check if an address is currently wearing a specific hat and in good standing',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              networkName: {
+                type: 'string',
+                description: 'Target blockchain network (e.g., "ethereum", "polygon", "arbitrum")'
+              },
+              hatId: {
+                type: 'string',
+                description: 'Hat ID in hex format (0x...) or pretty format (0x00000001.0001.0001)'
+              },
+              wearer: {
+                type: 'string',
+                description: 'Address to check for hat wearing status'
+              }
+            },
+            required: ['networkName', 'hatId', 'wearer']
+          }
+        },
+        {
+          name: 'get-hat-details',
+          description: 'Get comprehensive details about a specific hat including metadata, supply, modules, and hierarchy',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              networkName: {
+                type: 'string',
+                description: 'Target blockchain network'
+              },
+              hatId: {
+                type: 'string',
+                description: 'Hat ID in hex format (0x...) or pretty format (0x00000001.0001.0001)'
+              }
+            },
+            required: ['networkName', 'hatId']
+          }
+        },
+        {
+          name: 'query-hats-by-wearer',
+          description: 'Find all hats currently worn by a specific address, grouped by tree with metadata',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              networkName: {
+                type: 'string',
+                description: 'Target blockchain network'
+              },
+              wearer: {
+                type: 'string',
+                description: 'Address to find hats for'
+              },
+              includeInactive: {
+                type: 'boolean',
+                description: 'Whether to include inactive or burned hats',
+                default: false
+              },
+              limit: {
+                type: 'number',
+                description: 'Maximum number of hats to return (pagination)',
+                default: 50,
+                minimum: 1,
+                maximum: 200
+              }
+            },
+            required: ['networkName', 'wearer']
+          }
+        },
+        {
+          name: 'get-tree-structure',
+          description: 'Visualize the hierarchical structure of a hat tree with multiple output formats',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              networkName: {
+                type: 'string',
+                description: 'Target blockchain network'
+              },
+              treeId: {
+                type: 'string',
+                description: 'Tree ID (first 4 bytes of top hat ID, e.g., "0x00000001")'
+              },
+              format: {
+                type: 'string',
+                enum: ['json', 'ascii-tree', 'flat'],
+                description: 'Output format for tree visualization',
+                default: 'ascii-tree'
+              },
+              maxDepth: {
+                type: 'number',
+                description: 'Maximum depth to traverse (limits large trees)',
+                default: 10,
+                minimum: 1,
+                maximum: 20
+              }
+            },
+            required: ['networkName', 'treeId']
+          }
+        },
+
+        // Write Tools - Transaction Preparation
+        {
+          name: 'prepare-create-hat',
+          description: 'Prepare a transaction to create a new hat in the Hats Protocol hierarchy',
           inputSchema: {
             type: 'object',
             properties: {
@@ -86,8 +195,8 @@ export async function createServer(): Promise<Server> {
           }
         },
         {
-          name: 'mint-hat',
-          description: 'Mint (assign) a hat to a wearer',
+          name: 'prepare-mint-hat',
+          description: 'Prepare a transaction to mint (assign) a hat to a wearer',
           inputSchema: {
             type: 'object',
             properties: {
@@ -97,7 +206,7 @@ export async function createServer(): Promise<Server> {
               },
               hatId: {
                 type: 'string',
-                description: 'Hat ID to mint (256-bit hex)'
+                description: 'Hat ID to mint (256-bit hex or pretty format)'
               },
               wearer: {
                 type: 'string',
@@ -108,8 +217,8 @@ export async function createServer(): Promise<Server> {
           }
         },
         {
-          name: 'burn-hat',
-          description: 'Burn (remove) a hat from a wearer',
+          name: 'prepare-burn-hat',
+          description: 'Prepare a transaction to burn (remove) a hat from a wearer',
           inputSchema: {
             type: 'object',
             properties: {
@@ -119,7 +228,7 @@ export async function createServer(): Promise<Server> {
               },
               hatId: {
                 type: 'string',
-                description: 'Hat ID to burn (256-bit hex)'
+                description: 'Hat ID to burn (256-bit hex or pretty format)'
               },
               wearer: {
                 type: 'string',
@@ -130,8 +239,8 @@ export async function createServer(): Promise<Server> {
           }
         },
         {
-          name: 'transfer-hat',
-          description: 'Transfer a hat from one wearer to another',
+          name: 'prepare-transfer-hat',
+          description: 'Prepare a transaction to transfer a hat from one wearer to another',
           inputSchema: {
             type: 'object',
             properties: {
@@ -141,7 +250,7 @@ export async function createServer(): Promise<Server> {
               },
               hatId: {
                 type: 'string',
-                description: 'Hat ID to transfer (256-bit hex)'
+                description: 'Hat ID to transfer (256-bit hex or pretty format)'
               },
               from: {
                 type: 'string',
@@ -156,127 +265,10 @@ export async function createServer(): Promise<Server> {
           }
         },
 
-        // Permission Checking Tools
-        {
-          name: 'check-hat-wearer',
-          description: 'Check if an address is wearing a specific hat',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              networkName: {
-                type: 'string',
-                description: 'Target blockchain network'
-              },
-              wearer: {
-                type: 'string',
-                description: 'Address to check'
-              },
-              hatId: {
-                type: 'string',
-                description: 'Hat ID to check (256-bit hex)'
-              }
-            },
-            required: ['networkName', 'wearer', 'hatId']
-          }
-        },
-        {
-          name: 'check-hat-standing',
-          description: 'Check if a wearer is in good standing for a hat',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              networkName: {
-                type: 'string',
-                description: 'Target blockchain network'
-              },
-              wearer: {
-                type: 'string',
-                description: 'Address to check'
-              },
-              hatId: {
-                type: 'string',
-                description: 'Hat ID to check (256-bit hex)'
-              }
-            },
-            required: ['networkName', 'wearer', 'hatId']
-          }
-        },
-
-        // Query Tools
-        {
-          name: 'get-hat-details',
-          description: 'Get detailed information about a hat',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              networkName: {
-                type: 'string',
-                description: 'Target blockchain network'
-              },
-              hatId: {
-                type: 'string',
-                description: 'Hat ID to query (256-bit hex)'
-              },
-              includeWearers: {
-                type: 'boolean',
-                description: 'Include list of current wearers',
-                default: false
-              }
-            },
-            required: ['networkName', 'hatId']
-          }
-        },
-        {
-          name: 'query-hats-by-wearer',
-          description: 'Get all hats worn by an address',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              networkName: {
-                type: 'string',
-                description: 'Target blockchain network'
-              },
-              wearer: {
-                type: 'string',
-                description: 'Address to query'
-              },
-              includeDetails: {
-                type: 'boolean',
-                description: 'Include hat details in response',
-                default: true
-              }
-            },
-            required: ['networkName', 'wearer']
-          }
-        },
-        {
-          name: 'get-tree-structure',
-          description: 'Get the hierarchical structure of a hat tree',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              networkName: {
-                type: 'string',
-                description: 'Target blockchain network'
-              },
-              treeId: {
-                type: 'string',
-                description: 'Tree ID (first 4 bytes of top hat ID)'
-              },
-              maxDepth: {
-                type: 'number',
-                description: 'Maximum depth to traverse',
-                default: 10
-              }
-            },
-            required: ['networkName', 'treeId']
-          }
-        },
-
         // Network and Configuration Tools
         {
           name: 'list-networks',
-          description: 'List all supported blockchain networks for Hats Protocol',
+          description: 'List all supported blockchain networks with their configurations',
           inputSchema: {
             type: 'object',
             properties: {
@@ -290,21 +282,21 @@ export async function createServer(): Promise<Server> {
         },
         {
           name: 'set-api-key',
-          description: 'Set an API key for RPC or block explorer services',
+          description: 'Set an API key for RPC or subgraph services (stored securely)',
           inputSchema: {
             type: 'object',
             properties: {
-              keyName: {
+              service: {
                 type: 'string',
-                enum: ['ALCHEMY_API_KEY', 'INFURA_API_KEY', 'ETHERSCAN_API_KEY', 'POLYGONSCAN_API_KEY', 'ARBISCAN_API_KEY', 'OPTIMISTIC_ETHERSCAN_API_KEY', 'BASESCAN_API_KEY', 'GNOSISSCAN_API_KEY'],
-                description: 'Name of the API key to set'
+                enum: ['alchemy', 'infura', 'thegraph'],
+                description: 'Service to set API key for'
               },
-              value: {
+              apiKey: {
                 type: 'string',
-                description: 'The API key value'
+                description: 'API key value'
               }
             },
-            required: ['keyName', 'value']
+            required: ['service', 'apiKey']
           }
         }
       ]
@@ -316,28 +308,134 @@ export async function createServer(): Promise<Server> {
     const { name, arguments: args } = request.params;
 
     try {
-      let result: any;
-      
       switch (name) {
-        // Read-only tools
-        case 'check-hat-wearer':
-          result = await checkHatWearer(args as any);
-          break;
+        // Read Tools
+        case 'check-hat-wearer': {
+          const result = await checkHatWearer(args as any);
+          if (result.success) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: result.data!
+                }
+              ]
+            };
+          } else {
+            throw new McpError(
+              ErrorCode.InternalError,
+              result.error?.message || 'Tool execution failed'
+            );
+          }
+        }
           
-        case 'get-hat-details':
-          result = await getHatDetails(args as any);
-          break;
+        case 'get-hat-details': {
+          const result = await getHatDetails(args as any);
+          if (result.success) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: result.data!
+                }
+              ]
+            };
+          } else {
+            throw new McpError(
+              ErrorCode.InternalError,
+              result.error?.message || 'Tool execution failed'
+            );
+          }
+        }
           
-        case 'query-hats-by-wearer':
-          result = await queryHatsByWearer(args as any);
-          break;
+        case 'query-hats-by-wearer': {
+          const result = await queryHatsByWearer(args as any);
+          if (result.success) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: result.data!
+                }
+              ]
+            };
+          } else {
+            throw new McpError(
+              ErrorCode.InternalError,
+              result.error?.message || 'Tool execution failed'
+            );
+          }
+        }
           
-        case 'get-tree-structure':
-          result = await getTreeStructure(args as any);
-          break;
+        case 'get-tree-structure': {
+          const result = await getTreeStructure(args as any);
+          if (result.success) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: result.data!
+                }
+              ]
+            };
+          } else {
+            throw new McpError(
+              ErrorCode.InternalError,
+              result.error?.message || 'Tool execution failed'
+            );
+          }
+        }
+
+        // Write Tools - Transaction Preparation
+        case 'prepare-create-hat': {
+          const result = await prepareCreateHat(args as any);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2)
+              }
+            ]
+          };
+        }
+
+        case 'prepare-mint-hat': {
+          const result = await prepareMintHat(args as any);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2)
+              }
+            ]
+          };
+        }
+
+        case 'prepare-burn-hat': {
+          const result = await prepareBurnHat(args as any);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2)
+              }
+            ]
+          };
+        }
+
+        case 'prepare-transfer-hat': {
+          const result = await prepareTransferHat(args as any);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2)
+              }
+            ]
+          };
+        }
         
-        // Other tools (to be implemented)
-        case 'list-networks':
+        case 'list-networks': {
           // Temporary implementation for testing
           return {
             content: [
@@ -345,21 +443,28 @@ export async function createServer(): Promise<Server> {
                 type: 'text',
                 text: JSON.stringify({
                   mainnet: [
-                    { name: 'Ethereum', chainId: 1 },
-                    { name: 'Polygon', chainId: 137 },
-                    { name: 'Arbitrum', chainId: 42161 },
-                    { name: 'Optimism', chainId: 10 },
-                    { name: 'Base', chainId: 8453 },
-                    { name: 'Gnosis', chainId: 100 }
+                    'ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'gnosis'
                   ],
                   testnet: [
-                    { name: 'Sepolia', chainId: 11155111 },
-                    { name: 'Base Sepolia', chainId: 84532 }
+                    'sepolia', 'base-sepolia'
                   ]
                 }, null, 2)
               }
             ]
           };
+        }
+
+        case 'set-api-key': {
+          // Temporary implementation
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `API key for ${(args as any).service} set successfully (this is a placeholder implementation)`
+              }
+            ]
+          };
+        }
 
         default:
           throw new McpError(
@@ -367,28 +472,6 @@ export async function createServer(): Promise<Server> {
             `Tool '${name}' not found or not yet implemented`
           );
       }
-      
-      // Format response for tools that return ToolResponse format
-      if (result && typeof result === 'object' && 'success' in result) {
-        if (result.success) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(result.data, null, 2)
-              }
-            ]
-          };
-        } else {
-          throw new McpError(
-            ErrorCode.InternalError,
-            result.error?.message || 'Tool execution failed'
-          );
-        }
-      }
-      
-      return result;
-      
     } catch (error: any) {
       if (error instanceof McpError) {
         throw error;
@@ -401,28 +484,38 @@ export async function createServer(): Promise<Server> {
     }
   });
 
-  // Handle resource listing
+  // List resources
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
-    return await listResources();
+    const resources = await listResources();
+    return { resources };
   });
 
-  // Handle resource reading
+  // Read resource content
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-    return await readResource(request.params.uri);
+    const { uri } = request.params;
+    const content = await readResource(uri);
+    
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: 'application/json',
+          text: content
+        }
+      ]
+    };
   });
 
   return server;
 }
 
 /**
- * Start the MCP server
+ * Start the server with stdio transport
  */
 export async function startServer(): Promise<void> {
   const server = await createServer();
   const transport = new StdioServerTransport();
   
   await server.connect(transport);
-  
-  // Server will run until interrupted
-  console.error('Hats Protocol MCP Server started successfully');
+  console.error('Hats Protocol MCP server started on stdio');
 }
