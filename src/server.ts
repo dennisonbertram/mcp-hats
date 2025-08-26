@@ -20,6 +20,7 @@ import { getTreeStructure } from './tools/read/get-tree-structure.js';
 
 // Import write tool implementations
 import { prepareCreateHat } from './tools/write/prepare-create-hat.js';
+import { prepareMintTopHat } from './tools/write/prepare-mint-top-hat.js';
 import { prepareMintHat } from './tools/write/prepare-mint-hat.js';
 import { prepareBurnHat } from './tools/write/prepare-burn-hat.js';
 import { prepareTransferHat } from './tools/write/prepare-transfer-hat.js';
@@ -150,6 +151,41 @@ export async function createServer(): Promise<Server> {
         },
 
         // Write Tools - Transaction Preparation
+        {
+          name: 'prepare-mint-top-hat',
+          description: 'Prepare a transaction to create an entirely new hat tree with a top hat',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              networkName: {
+                type: 'string',
+                description: 'Target blockchain network (e.g., "ethereum", "polygon", "arbitrum")'
+              },
+              target: {
+                type: 'string',
+                description: 'Address to receive the top hat'
+              },
+              details: {
+                type: 'string',
+                description: 'Tree/organization name and description'
+              },
+              imageURI: {
+                type: 'string',
+                description: 'Optional image URI for the top hat'
+              },
+              fromAddress: {
+                type: 'string',
+                description: 'Optional sender address for gas estimation'
+              },
+              gasEstimateMultiplier: {
+                type: 'number',
+                description: 'Gas estimate multiplier (default: 1.2)',
+                default: 1.2
+              }
+            },
+            required: ['networkName', 'target', 'details']
+          }
+        },
         {
           name: 'prepare-create-hat',
           description: 'Prepare a transaction to create a new hat in the Hats Protocol hierarchy',
@@ -387,13 +423,26 @@ export async function createServer(): Promise<Server> {
         }
 
         // Write Tools - Transaction Preparation
+        case 'prepare-mint-top-hat': {
+          const result = await prepareMintTopHat(args as any);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, (_key, value) => 
+                  typeof value === 'bigint' ? value.toString() : value, 2)
+              }
+            ]
+          };
+        }
+
         case 'prepare-create-hat': {
           const result = await prepareCreateHat(args as any);
           return {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(result, (key, value) => 
+                text: JSON.stringify(result, (_key, value) => 
                   typeof value === 'bigint' ? value.toString() : value, 2)
               }
             ]
@@ -406,7 +455,7 @@ export async function createServer(): Promise<Server> {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(result, (key, value) => 
+                text: JSON.stringify(result, (_key, value) => 
                   typeof value === 'bigint' ? value.toString() : value, 2)
               }
             ]
@@ -419,7 +468,7 @@ export async function createServer(): Promise<Server> {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(result, (key, value) => 
+                text: JSON.stringify(result, (_key, value) => 
                   typeof value === 'bigint' ? value.toString() : value, 2)
               }
             ]
@@ -432,7 +481,7 @@ export async function createServer(): Promise<Server> {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(result, (key, value) => 
+                text: JSON.stringify(result, (_key, value) => 
                   typeof value === 'bigint' ? value.toString() : value, 2)
               }
             ]
