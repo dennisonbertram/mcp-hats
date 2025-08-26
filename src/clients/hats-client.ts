@@ -3,10 +3,10 @@
  */
 
 import { HatsClient as SDKHatsClient } from '@hatsprotocol/sdk-v1-core';
-import type { Address, Hex, PublicClient, WalletClient } from 'viem';
-import { createPublicClient, createWalletClient, http } from 'viem';
+import type { WalletClient } from 'viem';
+import { createPublicClient, http } from 'viem';
 import * as chains from 'viem/chains';
-import type { HatsClientConfig, NetworkConfig, HatId } from '../types/index.js';
+import type { HatId } from '../types/index.js';
 import { getNetworkConfig, resolveNetworkConfig } from '../networks/index.js';
 
 /**
@@ -239,7 +239,7 @@ export function getHatLevel(hatId: HatId): number {
  * Batch query helper for multiple operations
  */
 export async function batchQuery<T>(
-  client: SDKHatsClient,
+  _client: SDKHatsClient,
   operations: Array<() => Promise<T>>
 ): Promise<T[]> {
   return Promise.all(operations.map(op => op()));

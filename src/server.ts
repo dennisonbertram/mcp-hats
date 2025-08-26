@@ -393,7 +393,8 @@ export async function createServer(): Promise<Server> {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(result, null, 2)
+                text: JSON.stringify(result, (key, value) => 
+                  typeof value === 'bigint' ? value.toString() : value, 2)
               }
             ]
           };
@@ -405,7 +406,8 @@ export async function createServer(): Promise<Server> {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(result, null, 2)
+                text: JSON.stringify(result, (key, value) => 
+                  typeof value === 'bigint' ? value.toString() : value, 2)
               }
             ]
           };
@@ -417,7 +419,8 @@ export async function createServer(): Promise<Server> {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(result, null, 2)
+                text: JSON.stringify(result, (key, value) => 
+                  typeof value === 'bigint' ? value.toString() : value, 2)
               }
             ]
           };
@@ -429,7 +432,8 @@ export async function createServer(): Promise<Server> {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(result, null, 2)
+                text: JSON.stringify(result, (key, value) => 
+                  typeof value === 'bigint' ? value.toString() : value, 2)
               }
             ]
           };

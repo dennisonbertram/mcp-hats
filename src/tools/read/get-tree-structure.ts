@@ -14,7 +14,7 @@ export interface GetTreeStructureInput {
   networkName: string;
   treeId: string;
   maxDepth?: number;
-  format?: 'tree' | 'flat' | 'json';
+  format?: 'json' | 'ascii-tree' | 'flat';
   includeWearers?: boolean;
 }
 
@@ -146,14 +146,14 @@ function buildTreeStructure(
       continue;
     }
 
-    if (hat.admin && hat.admin.id) {
-      // This hat has an admin, so it's a child
+    if (hat.admin && hat.admin.id && hat.admin.id !== hat.id) {
+      // This hat has an admin and it's not itself, so it's a child
       const parentNode = hatMap.get(hat.admin.id);
       if (parentNode && parentNode.children) {
         parentNode.children.push(node);
       }
-    } else if (node.level === 1) {
-      // Top-level hat (no admin)
+    } else if (node.level === 1 || (hat.admin && hat.admin.id === hat.id)) {
+      // Top-level hat (no admin or admin is itself)
       root = node;
     }
   }
@@ -318,7 +318,7 @@ export async function getTreeStructure(
       responseData.flatList = flatList;
     }
 
-    if (format === 'tree') {
+    if (format === 'ascii-tree') {
       responseData.visualization = finalRoot ? generateTreeVisualization(finalRoot, '', true) : 'Empty tree';
     }
 

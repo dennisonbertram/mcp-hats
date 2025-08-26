@@ -4,7 +4,6 @@
 
 import { GraphQLClient } from 'graphql-request';
 import { gql } from 'graphql-request';
-import type { NetworkConfig } from '../types/index.js';
 import { getNetworkConfig, resolveNetworkConfig } from '../networks/index.js';
 
 /**
@@ -57,7 +56,6 @@ export const HAT_DETAILS_QUERY = gql`
       status
       details
       maxSupply
-      supply
       eligibility
       toggle
       mutable
@@ -320,7 +318,7 @@ export const ALL_TREES_QUERY = gql`
  */
 export async function queryHatDetails(networkName: string, hatId: string): Promise<any> {
   const client = await getSubgraphClient(networkName);
-  const result = await client.request(HAT_DETAILS_QUERY, { hatId: hatId.toLowerCase() });
+  const result = await client.request(HAT_DETAILS_QUERY, { hatId: hatId.toLowerCase() }) as any;
   return result.hat;
 }
 
@@ -329,7 +327,7 @@ export async function queryHatDetails(networkName: string, hatId: string): Promi
  */
 export async function queryTreeStructure(networkName: string, treeId: string): Promise<any> {
   const client = await getSubgraphClient(networkName);
-  const result = await client.request(TREE_STRUCTURE_QUERY, { treeId: treeId.toLowerCase() });
+  const result = await client.request(TREE_STRUCTURE_QUERY, { treeId: treeId.toLowerCase() }) as any;
   return result.tree;
 }
 
@@ -338,7 +336,7 @@ export async function queryTreeStructure(networkName: string, treeId: string): P
  */
 export async function queryWearerHats(networkName: string, wearer: string): Promise<any> {
   const client = await getSubgraphClient(networkName);
-  const result = await client.request(WEARER_HATS_QUERY, { wearer: wearer.toLowerCase() });
+  const result = await client.request(WEARER_HATS_QUERY, { wearer: wearer.toLowerCase() }) as any;
   return result.wearer;
 }
 
@@ -347,7 +345,7 @@ export async function queryWearerHats(networkName: string, wearer: string): Prom
  */
 export async function queryHatWearers(networkName: string, hatId: string): Promise<any> {
   const client = await getSubgraphClient(networkName);
-  const result = await client.request(HAT_WEARERS_QUERY, { hatId: hatId.toLowerCase() });
+  const result = await client.request(HAT_WEARERS_QUERY, { hatId: hatId.toLowerCase() }) as any;
   return result.hat;
 }
 
@@ -365,7 +363,7 @@ export async function searchHats(
     where: filters,
     first: limit,
     skip: offset,
-  });
+  }) as any;
   return result.hats;
 }
 
@@ -381,7 +379,7 @@ export async function queryRecentEvents(
   return await client.request(RECENT_EVENTS_QUERY, {
     first: limit,
     skip: offset,
-  });
+  }) as any;
 }
 
 /**
@@ -398,7 +396,7 @@ export async function queryTreeEvents(
     treeId: treeId.toLowerCase(),
     first: limit,
     skip: offset,
-  });
+  }) as any;
   return result.tree?.events || [];
 }
 
@@ -409,7 +407,7 @@ export async function queryHatsByIds(networkName: string, hatIds: string[]): Pro
   const client = await getSubgraphClient(networkName);
   const result = await client.request(HATS_BY_IDS_QUERY, {
     ids: hatIds.map(id => id.toLowerCase()),
-  });
+  }) as any;
   return result.hats;
 }
 
@@ -425,7 +423,7 @@ export async function queryAllTrees(
   const result = await client.request(ALL_TREES_QUERY, {
     first: limit,
     skip: offset,
-  });
+  }) as any;
   return result.trees;
 }
 

@@ -135,7 +135,7 @@ export async function checkHatWearer(
     });
 
     // Get hat details from SDK
-    const hatData = await hatsClient.getHat(BigInt(normalizedHatId));
+    const hatData = await hatsClient.viewHat(BigInt(normalizedHatId));
 
     // Initialize response data
     const responseData: CheckHatWearerOutput = {
@@ -147,7 +147,7 @@ export async function checkHatWearer(
         name: hatData.details || 'Unnamed Hat',
         description: hatData.details,
         level: getHatLevel(normalizedHatId),
-        status: hatData.status
+        status: hatData.active
       },
       treeInfo: {
         treeId: getTreeId(normalizedHatId),
@@ -188,8 +188,8 @@ export async function checkHatWearer(
         // Add metadata
         responseData.metadata = {
           supply: {
-            current: parseInt(subgraphData.currentSupply || hatData.supply || '0'),
-            max: parseInt(subgraphData.maxSupply || hatData.maxSupply || '0'),
+            current: parseInt(subgraphData.currentSupply || hatData.supply.toString() || '0'),
+            max: parseInt(subgraphData.maxSupply || hatData.maxSupply.toString() || '0'),
             percentage: 0
           },
           modules: {

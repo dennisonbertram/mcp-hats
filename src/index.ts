@@ -58,7 +58,7 @@ async function main(): Promise<void> {
 }
 
 // Check if this module is being run directly  
-if (import.meta.url.endsWith('index.js')) {
+if (import.meta.url.endsWith('index.js') || import.meta.url.endsWith('index.ts')) {
   main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);

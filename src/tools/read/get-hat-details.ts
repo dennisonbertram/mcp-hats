@@ -129,10 +129,10 @@ export async function getHatDetails(
     const hatsClient = await getHatsClient(input.networkName);
 
     // Get hat data from SDK
-    const hatData = await hatsClient.getHat(BigInt(normalizedHatId));
+    const hatData = await hatsClient.viewHat(BigInt(normalizedHatId));
 
     // Check if hat is active
-    const isActive = await hatsClient.isHatActive(BigInt(normalizedHatId));
+    const isActive = await hatsClient.isActive(BigInt(normalizedHatId));
 
     // Get tree information
     const treeId = getTreeId(normalizedHatId);
