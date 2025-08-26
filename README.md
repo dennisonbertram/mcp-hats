@@ -74,7 +74,71 @@ You can also set API keys using the MCP tools:
 
 ## Usage
 
-### Starting the Server
+### Integrating with Claude Code
+
+The easiest way to use this MCP server is to integrate it with Claude Code. After installing the server, add it to your Claude configuration:
+
+#### Quick Setup
+
+```bash
+# Clone and install the server
+git clone https://github.com/your-username/mcp-hats
+cd mcp-hats
+npm install
+npm run build
+
+# Add to Claude Code (with optional API key for better performance)
+claude mcp add hats-protocol --env ALCHEMY_API_KEY=your_key_here -- node dist/index.js
+```
+
+#### Alternative Setup Methods
+
+**Option 1: Local Development (no build required)**
+```bash
+claude mcp add hats-protocol --env ALCHEMY_API_KEY=your_key_here -- npx tsx src/index.ts
+```
+
+**Option 2: Global NPM installation (if published)**
+```bash
+claude mcp add hats-protocol --env ALCHEMY_API_KEY=your_key_here -- npx mcp-hats-protocol
+```
+
+**Option 3: Team/Project Configuration**
+```bash
+# For team sharing via .mcp.json
+claude mcp add --scope project hats-protocol --env ALCHEMY_API_KEY=your_key_here -- node dist/index.js
+
+# For user-wide access across all projects
+claude mcp add --scope user hats-protocol --env ALCHEMY_API_KEY=your_key_here -- node dist/index.js
+```
+
+#### Managing the Integration
+
+```bash
+# List all MCP servers
+claude mcp list
+
+# View server details
+claude mcp get hats-protocol
+
+# Remove the server
+claude mcp remove hats-protocol
+```
+
+#### Environment Variables in Claude Code
+
+You can set API keys when adding the server:
+
+```bash
+claude mcp add hats-protocol \
+  --env ALCHEMY_API_KEY=your_alchemy_key \
+  --env ETHERSCAN_API_KEY=your_etherscan_key \
+  -- node dist/index.js
+```
+
+### Manual Server Usage
+
+If you prefer to run the server manually (for development or standalone use):
 
 ```bash
 # Development mode
@@ -83,6 +147,32 @@ npm run dev
 # Production mode
 npm start
 ```
+
+### Using with Claude Code
+
+Once integrated, you can use the Hats Protocol tools directly in your conversations with Claude:
+
+#### Example: Check if someone has a role
+```
+Check if address 0x742C3cF9Af45f91B109a81EfEaf11535ECDe9571 is wearing hat 0x0000000100010000000000000000000000000000000000000000000000000000 on Ethereum
+```
+
+#### Example: Create a new organization
+```
+Help me create a new DAO called "TechCollective" on Base Sepolia with myself (0x742C3cF9Af45f91B109a81EfEaf11535ECDe9571) as the founder
+```
+
+#### Example: Analyze organizational structure
+```
+Show me the organizational structure for tree 0x00000001 on Base and visualize it as an ASCII tree
+```
+
+#### Example: Get role assignment guidance
+```
+I need to assign the CTO role to a new team member. Can you guide me through the process and prepare the transaction?
+```
+
+Claude will automatically use the appropriate Hats Protocol tools and provide intelligent guidance through the built-in prompts and resources.
 
 ### Available Tools
 
