@@ -751,6 +751,119 @@ JSON.stringify(result, (key, value) =>
 - Transaction preparation validated for external signing
 - Documentation of all bugs found and fixed
 
+---
+
+## Test 10: prepare-mint-top-hat tool
+
+### Test Details
+- **Tool**: `prepare-mint-top-hat`
+- **Network**: Sepolia testnet
+- **Purpose**: Create entirely new hat trees (not hats within existing trees)
+- **Date**: August 26, 2025
+
+### Testing Process
+
+#### Step 1: Implementation Analysis
+**Key Differences from prepare-create-hat**:
+- Function: `mintTopHat` (not `createHat`)
+- No `admin` parameter (top hats have no admin)
+- No `maxSupply` parameter (top hats are unique)
+- No `eligibility/toggle` modules (top hats use defaults)
+- Creates brand new trees vs. hats within existing trees
+
+#### Step 2: Full Parameter Test
+**MCP Tool Call**:
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "prepare-mint-top-hat",
+    "arguments": {
+      "networkName": "sepolia",
+      "target": "0x60ede337dde466c0839553579c81bfe1e795bfd2",
+      "details": "My New Organization Tree", 
+      "imageURI": "ipfs://testnewtreeimage"
+    }
+  }
+}
+```
+
+#### Step 3: Minimal Parameters Test
+**Verified**: Tool works with only required parameters (networkName, target, details)
+
+#### Step 4: Input Validation Test
+**Invalid Address**: `"target": "invalid-address"`
+**Result**: ✅ Properly rejected with clear error: "Invalid target address"
+
+### Final Test Results
+
+#### ✅ Transaction Successfully Prepared
+**Key Details**:
+- **Function**: `mintTopHat` (correct - creates new trees!)
+- **Contract**: `0x3bc1A0Ad72417f2d411118085256fC53CBdDd137` (correct Hats V1 address)
+- **Gas Estimate**: 179,057 (successful estimation!)
+- **Cost**: ~0.00018 ETH (reasonable for tree creation)
+
+#### ✅ Data Encoding Verification
+**Transaction Data**: `0x1a64dfad...`
+- Function selector: `0x1a64dfad` (mintTopHat)
+- Target address: Properly encoded recipient
+- Details string: UTF-8 encoded tree description
+- ImageURI: Optional parameter properly handled
+
+#### ✅ Parameter Structure
+**Arguments Array**:
+```json
+[
+  "0x60ede337dde466c0839553579c81bfe1e795bfd2", // target
+  "My New Organization Tree",                      // details  
+  "ipfs://testnewtreeimage"                       // imageURI
+]
+```
+
+### Issues Found and Status
+
+#### ✅ NO ISSUES FOUND
+- BigInt serialization working correctly 
+- Transaction data properly encoded for `mintTopHat` function
+- Gas estimation successful (higher than normal hat creation - expected)
+- Input validation robust for addresses and required parameters
+- Optional parameters handled correctly
+
+### Key Implementation Features
+
+#### 🎯 **Correct Function Usage**
+- Uses `mintTopHat` not `createHat`
+- Creates entirely new trees, not sub-hats
+- Target receives the top hat (tree admin)
+
+#### 🔧 **Proper Parameter Mapping**
+- `target` → who gets the top hat
+- `details` → organization/tree description
+- `imageURI` → optional top hat image
+
+#### 🛡️ **Robust Validation**
+- Address format validation
+- Required parameter checking
+- Network configuration validation
+
+### Test Conclusion
+**PASS** - Tool working perfectly for creating new hat trees. Successfully differentiates from regular hat creation and provides proper transaction preparation for external signing.
+
+---
+
 ## Final Assessment: **COMPREHENSIVE SUCCESS** ✅
 
-All 10 MCP tools are fully functional with robust error handling, proper external signing workflow support, and comprehensive data integration across RPC, subgraph, and SDK layers.
+All 11 MCP tools are fully functional with robust error handling, proper external signing workflow support, and comprehensive data integration across RPC, subgraph, and SDK layers.
+
+### Updated Tool Summary
+
+| **Read Tools** | **Write Tools** | **Utility Tools** |
+|----------------|----------------|------------------|
+| ✅ check-hat-wearer | ✅ prepare-create-hat | ✅ list-networks |
+| ✅ get-hat-details | ✅ prepare-mint-top-hat | ✅ set-api-key |
+| ✅ query-hats-by-wearer | ✅ prepare-mint-hat | |
+| ✅ get-tree-structure | ✅ prepare-burn-hat | |
+| | ✅ prepare-transfer-hat | |
+
+**New Capability Added**: Complete organizational structure creation via new hat tree minting!
