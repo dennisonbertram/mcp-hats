@@ -12,8 +12,11 @@ import {
 // Import resource implementations
 import { listResources, readResource } from './resources/index.js';
 
-// Tool imports will be added as we implement them
-// import { ... } from './tools/...'
+// Import read-only tool implementations
+import { checkHatWearer } from './tools/read/check-hat-wearer.js';
+import { getHatDetails } from './tools/read/get-hat-details.js';
+import { queryHatsByWearer } from './tools/read/query-hats-by-wearer.js';
+import { getTreeStructure } from './tools/read/get-tree-structure.js';
 
 /**
  * Create and configure the Hats Protocol MCP server
@@ -313,11 +316,27 @@ export async function createServer(): Promise<Server> {
     const { name, arguments: args } = request.params;
 
     try {
+      let result: any;
+      
       switch (name) {
-        // Tool implementations will be added as we develop them
-        // case 'create-hat':
-        //   return await createHat(args);
+        // Read-only tools
+        case 'check-hat-wearer':
+          result = await checkHatWearer(args as any);
+          break;
+          
+        case 'get-hat-details':
+          result = await getHatDetails(args as any);
+          break;
+          
+        case 'query-hats-by-wearer':
+          result = await queryHatsByWearer(args as any);
+          break;
+          
+        case 'get-tree-structure':
+          result = await getTreeStructure(args as any);
+          break;
         
+        // Other tools (to be implemented)
         case 'list-networks':
           // Temporary implementation for testing
           return {
@@ -348,6 +367,28 @@ export async function createServer(): Promise<Server> {
             `Tool '${name}' not found or not yet implemented`
           );
       }
+      
+      // Format response for tools that return ToolResponse format
+      if (result && typeof result === 'object' && 'success' in result) {
+        if (result.success) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result.data, null, 2)
+              }
+            ]
+          };
+        } else {
+          throw new McpError(
+            ErrorCode.InternalError,
+            result.error?.message || 'Tool execution failed'
+          );
+        }
+      }
+      
+      return result;
+      
     } catch (error: any) {
       if (error instanceof McpError) {
         throw error;

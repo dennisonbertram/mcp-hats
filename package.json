@@ -35,7 +35,7 @@
   "license": "MIT",
   "dependencies": {
     "@hatsprotocol/sdk-v1-core": "0.10.0",
-    "@modelcontextprotocol/sdk": "0.6.2",
+    "@modelcontextprotocol/sdk": "1.17.4",
     "dotenv": "16.4.5",
     "graphql": "16.9.0",
     "graphql-request": "7.1.2",
