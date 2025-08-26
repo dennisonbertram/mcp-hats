@@ -3,6 +3,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
   ErrorCode,
+  GetPromptRequestSchema,
+  ListPromptsRequestSchema,
   ListResourcesRequestSchema,
   ListToolsRequestSchema,
   McpError,
@@ -11,6 +13,9 @@ import {
 
 // Import resource implementations
 import { listResources, readResource } from './resources/index.js';
+
+// Import prompt implementations
+import { listPrompts, getPrompt } from './prompts/index.js';
 
 // Import read-only tool implementations
 import { checkHatWearer } from './tools/read/check-hat-wearer.js';
@@ -37,6 +42,7 @@ export async function createServer(): Promise<Server> {
     },
     {
       capabilities: {
+        prompts: {},
         resources: {},
         tools: {}
       }
@@ -537,6 +543,27 @@ export async function createServer(): Promise<Server> {
     }
   });
 
+  // List available prompts
+  server.setRequestHandler(ListPromptsRequestSchema, async () => {
+    const result = await listPrompts();
+    return result;
+  });
+
+  // Get specific prompt
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const { name, arguments: args } = request.params;
+    
+    try {
+      const result = await getPrompt(name, args);
+      return result;
+    } catch (error: any) {
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Error getting prompt '${name}': ${error.message}`
+      );
+    }
+  });
+
   // List resources
   server.setRequestHandler(ListResourcesRequestSchema, async () => {
     const resources = await listResources();
@@ -546,17 +573,8 @@ export async function createServer(): Promise<Server> {
   // Read resource content
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const { uri } = request.params;
-    const content = await readResource(uri);
-    
-    return {
-      contents: [
-        {
-          uri,
-          mimeType: 'application/json',
-          text: content
-        }
-      ]
-    };
+    const result = await readResource(uri);
+    return result;
   });
 
   return server;
